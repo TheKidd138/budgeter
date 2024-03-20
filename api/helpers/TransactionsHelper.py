@@ -11,24 +11,37 @@ class TransactionsHelper:
         print('TransactionHelper instance created.')
         return
     
-    def __format_response(self, response: dict):
-        items = response['Items']
-        # For Loop Implementation
-        # for i,item in enumerate(items):
-        #     trans_dict = {}
-        #     for key, value in item.items():
-        #         trans_dict[key] = list(value.values())[0]
-        #     print(trans_dict)
-        #     items[i] = trans_dict
 
-        # List comprehension of above for loops
-        if not items:
-            print('API call returned no values')
-            return(None)
-        items = [{key: list(value.values())[0]
-                    for key, value in item.items()} for item in items]
-        # print(items)
-        return(items)
+    def __format_response(self, response: dict):
+        # print(response)
+        if 'Items' in response:
+            # Multiple items to format
+            items = response['Items']
+            # For Loop Implementation
+            # for i,item in enumerate(items):
+            #     trans_dict = {}
+            #     for key, value in item.items():
+            #         trans_dict[key] = list(value.values())[0]
+            #     print(trans_dict)
+            #     items[i] = trans_dict
+
+            # List comprehension of above for loops
+            if not items:
+                print('API call returned no values.')
+                return(None)
+            items = [{key: list(value.values())[0]
+                        for key, value in item.items()} for item in items]
+            # print(items)
+            return(items)
+        else:
+            # One item to format
+            item = response['Item']
+            if not item:
+                print('API call returned no value.')
+                return(None)
+            item = [{key: list(value.values())[0]} for key, value in item.items()]
+            # print(item)
+            return(item)
 
     
     def fetch_all(self):
@@ -42,15 +55,16 @@ class TransactionsHelper:
     def fetch_one(self, transaction_id: str):
         get_params = {
             'TableName': self.table_name,
-            'Key':{'transaction_id':{'S': '2'}}
+            'Key':{'transaction_id':{'S': transaction_id}}
         }
         response = self.client.get_item(**get_params)
-        print(response)
-        items = self.__format_response(response)
+        # print(response)
+        item = self.__format_response(response)
         # If no item found, return NONE to avoid error.
-        if not items:
+        if not item:
             return(None)
-        return(items[0])
+        return(item)
+
 
     def fetch_month(self, year_month: str):
         query_params = {
@@ -87,7 +101,7 @@ class TransactionsHelper:
         # Flatten the list of lists into one list of values
         items = [item for sublist in items_lists if sublist for item in sublist]
         return(items)
-
+    
 
     def fetch_category_by_month(self, category: str, year_month: str):
         query_params = {
@@ -103,6 +117,7 @@ class TransactionsHelper:
         items = self.__format_response(response)
         return(items)
 
+
     def fetch_category_by_year(self, category: str, year: str):
         # Create list of months based on year
         months_list = [year + '{:02d}'.format(month) for month in range(1, 13)]
@@ -112,3 +127,17 @@ class TransactionsHelper:
         items = [item for sublist in items_lists if sublist for item in sublist]
         return(items)
 
+
+    # TODO
+    def create_transaction(self):
+        pass
+
+    
+    # TODO
+    def update_transaction(self):
+        pass
+
+
+    # TODO
+    def delete_transaction(self):
+        pass
