@@ -4,18 +4,21 @@ from helpers import TransactionsHelper
 
 helper = TransactionsHelper('us-east-1', 'transactions')
 
-def get_year_month():
-    current_datetime = datetime.datetime.now()
-    # Extract the year and month components
-    current_year = current_datetime.year
-    current_month = current_datetime.month
-    # Format the year and month as YYYYMM
-    year_month = '{:04d}{:02d}'.format(current_year, current_month)
-    return year_month
+trans = {
+    'amount': {'N':'50'},
+    'category': {'S':'Personal'},
+    'year_month': {'S':'202404'}
+}
+# helper.create_transaction(trans)
+trans2 = {
+    'transaction_id': {'S':'4b59da65-2fe8-4fd0-b827-e116900bf3ff'},
+    'amount': {'N':'100'},
+    'category': {'S':'Personal'},
+    'year_month': {'S':'202404'}
+}
+# helper.update_transaction(trans2)
 
-year_month = get_year_month()
-print(year_month)
-resp = helper.fetch_month(year_month)
+helper.delete_transaction('4b59da65-2fe8-4fd0-b827-e116900bf3ff')
 
 # helper.fetch_one('1')
 
@@ -25,6 +28,6 @@ resp = helper.fetch_month(year_month)
 # resp = helper.fetch_year('2024')
 # resp = helper.fetch_category_by_month('mortgage','202403')
 # resp = helper.fetch_category_by_year('mortgage','2024')
-print(resp)
+# print(resp)
 
 

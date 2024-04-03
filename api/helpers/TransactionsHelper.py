@@ -1,3 +1,5 @@
+import uuid
+
 import boto3
 
 
@@ -17,13 +19,6 @@ class TransactionsHelper:
         if 'Items' in response:
             # Multiple items to format
             items = response['Items']
-            # For Loop Implementation
-            # for i,item in enumerate(items):
-            #     trans_dict = {}
-            #     for key, value in item.items():
-            #         trans_dict[key] = list(value.values())[0]
-            #     print(trans_dict)
-            #     items[i] = trans_dict
 
             # List comprehension of above for loops
             if not items:
@@ -42,6 +37,12 @@ class TransactionsHelper:
             item = [{key: list(value.values())[0]} for key, value in item.items()]
             # print(item)
             return(item)
+        
+
+    def __validate_transaction(self, transaction: dict):
+        valid_keys = ['transaction_id','amount','category','year_month']
+        transaction_keys = transaction.keys()
+        return set(valid_keys) == set(transaction_keys)
 
     
     def fetch_all(self):
@@ -128,16 +129,39 @@ class TransactionsHelper:
         return(items)
 
 
-    # TODO
-    def create_transaction(self):
-        pass
+    def create_transaction(self, transaction: dict):
+        transaction['transaction_id'] = {'S': str(uuid.uuid4())}
+        if self.__validate_transaction(transaction):
+            resp = self.client.put_item(TableName=self.table_name,Item=transaction)
+            if resp.get('ResponseMetadata',{'HTTPStatusCode': None}).get('HTTPStatusCode', None) == 200:
+                return(True)
+            else:
+                print('Issue putting item.')
+                print(resp)
+                return(False)
+        else:
+            print('Invalid Transaction.')
 
-    
-    # TODO
-    def update_transaction(self):
-        pass
+
+    def update_transaction(self,transaction: dict):
+        if self.__validate_transaction(transaction):
+            resp = self.client.put_item(TableName=self.table_name,Item=transaction)
+            if resp.get('ResponseMetadata',{'HTTPStatusCode': None}).get('HTTPStatusCode', None) == 200:
+                return(True)
+            else:
+                print('Issue putting item.')
+                print(resp)
+                return(False)
+        else:
+            print('Invalid Transaction.')
 
 
-    # TODO
-    def delete_transaction(self):
-        pass
+    def delete_transaction(self, transaction_id: str):
+        delete_key = {'transaction_id': {'S':transaction_id}}
+        resp = self.client.delete_item(TableName=self.table_name,Key=delete_key)
+        if resp.get('ResponseMetadata',{'HTTPStatusCode': None}).get('HTTPStatusCode', None) == 200:
+            return(True)
+        else:
+            print('Issue deleting item.')
+            print(resp)
+            return(False)
